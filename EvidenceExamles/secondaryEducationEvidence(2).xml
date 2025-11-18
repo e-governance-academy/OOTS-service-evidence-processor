@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+   <secondaryEducationEvidenceDE>
+      <title>THH Highschool Diploma</title>
+      <id>173767383737836</id>
+      <citizenship>German</citizenship>
+      <dateOfBirth>Date</dateOfBirth>
+      <familyName>Smith</familyName>
+      <givenName>Jack</givenName>
+      <issueDate>23.05.2017</issueDate>
+      <issuingAuthority>Technische Highschool Hamburg</issuingAuthority>
+      <motherName>Smith Ana</motherName>
+      <fatherName>Smith Jim</fatherName>
+      <placeOfBirth>Dusseldorf</placeOfBirth>
+      <sex>M</sex>
+      <degree>9,67</degree>
+   </secondaryEducationEvidenceDE>
+</root>
