@@ -2,10 +2,12 @@ name: Docker Build and Push
 
 on:
   push:
-    branches: [ "main", "develop" ] # <-- ЗМІНЕНО: Додано "develop"
+    # ЗМІНЕНО: Додано pattern для всіх гілок: **
+    branches: [ "**" ]
     tags: [ 'v*.*.*' ]
+  # ЗМІНЕНО: Залишаємо pull_request, щоб не білдити двічі (push і PR)
   pull_request:
-    branches: [ "main", "develop" ] # <-- ЗМІНЕНО: Додано "develop"
+    branches: [ "**" ]
 
 env:
   REGISTRY: ghcr.io
@@ -38,16 +40,20 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # Використовує назву гілки (main або develop) як тег
-            type=raw,value=${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/heads/') }}
+            # 💡 ЗМІНЕНО: Додано логіку для робочих гілок (feature branches)
+            # Прибираємо скісні риски та використовуємо назву гілки як тег (наприклад, feature-new-api)
+            type=raw,value=${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/heads/') }},event=push
             # Використовує тег git-версії (наприклад, v1.0.0)
             type=ref,event=tag
+            # Використовує SHA коміта як резервний тег (за бажанням)
+            # type=sha,format=short
 
       # 4. Збірка та пуш образу
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          # Пушимо образ лише для події 'push', а не 'pull_request'
+          push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
