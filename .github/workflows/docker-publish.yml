@@ -2,10 +2,10 @@ name: Docker Build and Push
 
 on:
   push:
-    branches: [ "main" ] # Або "master", залежно від вашої основної гілки
-    tags: [ 'v*.*.*' ]   # Запускати також при створенні тегів (наприклад, v1.0.0)
+    branches: [ "main", "develop" ] # <-- ЗМІНЕНО: Додано "develop"
+    tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ] # <-- ЗМІНЕНО: Додано "develop"
 
 env:
   REGISTRY: ghcr.io
@@ -32,19 +32,22 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # 3. Генерація метаданих (тегів та лейблів) для Docker
-      # Це автоматично створить тег 'latest' для гілки main
-      # та відповідні версії для git-тегів.
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Використовує назву гілки (main або develop) як тег
+            type=raw,value=${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/heads/') }}
+            # Використовує тег git-версії (наприклад, v1.0.0)
+            type=ref,event=tag
 
       # 4. Збірка та пуш образу
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }} # Пушити тільки якщо це не Pull Request
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
