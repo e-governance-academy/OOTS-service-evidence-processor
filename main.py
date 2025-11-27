@@ -1,3 +1,8 @@
+__version__ = "0.1.1"
+__author__ = "Andrii Shapovalov"
+__author_email__ = "mt.andrey@gmail.com"
+__github_username__ = "AndreyShapovalovVN"
+
 import logging
 import os
 
@@ -5,10 +10,9 @@ import redis.asyncio as aioredis
 
 from apps.processor import processor
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(filename)s - %(levelname)s - %(message)s')
 _logger = logging.getLogger(__name__)
 
-redis_timeout = os.getenv("REDIS_TIMEOUT", 5)
+redis_timeout = int(os.getenv("REDIS_TIMEOUT", "5"))
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_client = aioredis.from_url(redis_url)
 
@@ -44,5 +48,6 @@ if __name__ == "__main__":
 
     import asyncio
 
+    _logger.info(f"Build version: {__version__}")
     _logger.info('Starting...')
     asyncio.run(process_evidence_requests())

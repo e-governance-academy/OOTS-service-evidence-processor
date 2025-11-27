@@ -1,6 +1,5 @@
 import logging
 import os
-from urllib.parse import urlparse
 
 from apps.route import route
 from utils.EDMRequestParsing import EDMRequestParsing
@@ -25,16 +24,21 @@ async def processor(message_id: str):
         return None
 
     t = edm_request.evidenceTypeClassification
+    _logger.info(f"Отриманий запит EvidenceTypeClassification: {t}")
     proc_queue = await UseRedis.get_from_redis(f'oots:evidencetype:{t.split("/")[-1]}')
 
     if proc_queue:
+        _logger.info(f"Знайшли діючий метод надання доказу")
+        _logger.info(f"Поставили в чергу: {proc_queue}")
         await UseRedis.push_to_queue(proc_queue, f"{message_id}")
     else:
+        # todo Потрібно згенерувати якусь помилкц щоб повідомити про не можливість надання доказу
+        # Зараз тут генеруєтся тестові данні
         evidence, evidence_metadata, preview = route(edm_request)
 
         evidence.get_evidence(edm_request)
 
         await UseRedis.save_to_redis(f"oots:message:response:evidence:{message_id}", evidence.to_redis)
         await UseRedis.push_to_queue(QUEUE_OUTCOMING, f"{message_id}")
-
+    _logger.info(f"Завершили обробку message_id: {message_id}")
     return None
