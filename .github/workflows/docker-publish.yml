@@ -25,6 +25,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set build date
+        id: date
+        run: echo "format_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
       # 2. Логін у GitHub Container Registry
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -57,3 +61,5 @@ jobs:
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_DATE=${{ steps.date.outputs.format_date }}

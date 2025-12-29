@@ -83,10 +83,10 @@ class Evidance(NS):
                     "content_type": "application/xml",
                     "content": etree.tostring(xml, encoding='utf8').decode('utf8'),
                     "permit": False,
-                    "metadate": evidence_metadata,
+                    "metadata": evidence_metadata,
                 }
             )
-            _logger.debug(f"Metadate: {evidence_metadata}")
+            _logger.debug(f"Metadata: {evidence_metadata}")
 
     @property
     def to_redis(self):
