@@ -24,7 +24,7 @@ class Evidence(NS):
     def RepositoryItemRef(self) -> etree._Element:
         return etree.Element(
             self._tname("rim", "RepositoryItemRef"),
-            nsmap=self._ns(),
+            nsmap=self._ns,
             attrib={"title": self.title, self._tname("xlink", "href"): self.cid},
         )
 

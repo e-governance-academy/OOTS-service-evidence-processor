@@ -2,7 +2,8 @@ import json
 import os
 
 import redis
-import redis.asyncio as Redis
+from redis.asyncio import Redis
+from typing import Awaitable, cast
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 TTL = int(os.getenv("REDIS_TTL", "86400"))  # 1 day
@@ -14,7 +15,7 @@ class UseRedisAsync:
         _redis_client: Redis async client instance
     """
 
-    def __init__(self, redis_url: str | Redis.Redis | None = None):
+    def __init__(self, redis_url: str | Redis | None = None):
         """Initialize Redis client with provided URL or default configuration.
         Args:
             redis_url: Redis connection URL or Redis client instance.
@@ -23,7 +24,7 @@ class UseRedisAsync:
             redis.exceptions.ConnectionError: If Redis connection fails
         """
         try:
-            if isinstance(redis_url, Redis.Redis):
+            if isinstance(redis_url, Redis):
                 self._redis_client = redis_url
             else:
                 url = redis_url if isinstance(redis_url, str) else REDIS_URL
@@ -62,7 +63,7 @@ class UseRedisAsync:
             queue_name: Name of the Redis list queue
             message: Message to push to the queue
         """
-        await self._redis_client.lpush(queue_name, message)
+        await cast(Awaitable[int], self._redis_client.lpush(queue_name, message))
 
     async def update_from_redis(self, key: str, data: dict) -> None:
         """Update existing dictionary in Redis with new data.
@@ -80,7 +81,7 @@ class UseRedisAsync:
         await self.save_to_redis(key, d)
 
     @property
-    def redis(self) -> Redis.Redis:
+    def redis(self) -> Redis:
         """Get the Redis client instance.
         Returns:
             Redis client instance

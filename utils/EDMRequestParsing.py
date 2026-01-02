@@ -1,5 +1,6 @@
-from lxml import etree
 import logging
+
+from lxml import etree
 
 _logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class EDMRequestParsing:
         value = slot.findall(".//sdg:Agent", namespaces=self._ns)
         return value
 
-    def request(self):
+    def evidence_request(self):
         slot = self._slot("EvidenceRequest")
         if slot is None:
             return False
@@ -101,23 +102,23 @@ class EDMRequestParsing:
         value = slot.find(".//rim:Value", namespaces=self._ns)
         return value.text
 
-    def all_slots(self, query: bool = False) -> dict[str, str | etree._Element]:
-        if query:
+    def all_slots(self, query: bool = False) -> dict[str, str | etree._Element | None]:
+        if isinstance(self.query, etree._Element):
             slots = self.query.findall(".//rim:Slot", namespaces=self._ns)
         else:
             slots = self.request.findall(".//rim:Slot", namespaces=self._ns)
-        result = {}
+        result: dict[str, str | etree._Element | None] = {}
         for slot in slots:
             name = slot.get("name")
+            if not name:
+                continue
             value = slot.find(".//rim:Value", namespaces=self._ns)
             if name and value is not None:
                 result[name] = value.text
             if not value:
                 value = slot.find(".//rim:SlotValue", namespaces=self._ns)
-            try:
-                for chaild in value.getchildren():
-                    result[name] = chaild
-            except Exception as e:
-                _logger.error(e)
-        #         todo потрібно щось робити
+            if value is not None:
+                for chaild in value.iterchildren():
+                    if isinstance(chaild, etree._Element | str):
+                        result[name] = chaild
         return result

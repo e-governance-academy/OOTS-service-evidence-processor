@@ -2,8 +2,8 @@ from lxml import etree
 
 
 class NS:
-    _xml: etree._Element | None = None
-    _ns = {
+    _xml: etree._Element
+    _ns: dict[str, str] = {
         "xsi": "http://www.w3.org/2001/XMLSchema-instance",
         "rs": "urn:oasis:names:tc:ebxml-regrep:xsd:rs:4.0",
         "rim": "urn:oasis:names:tc:ebxml-regrep:xsd:rim:4.0",
@@ -24,4 +24,6 @@ class NS:
 
     @property
     def xml_string(self) -> str:
+        if self._xml is None:
+            return ''
         return etree.tostring(self._xml, pretty_print=True).decode("utf-8")
