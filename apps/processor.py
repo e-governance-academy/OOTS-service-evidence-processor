@@ -16,38 +16,42 @@ UseRedis = UseRedisAsync(redis_url)
 
 
 async def processor(message_id: str):
-    xml_request = await UseRedis.get_from_redis(f"oots:message:request:edm:{message_id}")
+    xml_request = await UseRedis.get_from_redis(
+        f"oots:message:request:edm:{message_id}"
+    )
     if isinstance(xml_request, list):
         edm_request = EDMRequestParsing(xml_request[0]["content"])
     else:
-        _logger.error(f"Щось пішло не так читай запит")
+        _logger.error("Щось пішло не так читай запит")
         return None
 
     t = edm_request.evidenceTypeClassification
     _logger.info(f"Отриманий запит EvidenceTypeClassification: {t}")
-    proc_queue = await UseRedis.get_from_redis(f'oots:evidencetype:{t.split("/")[-1]}')
+    proc_queue = await UseRedis.get_from_redis(f"oots:evidencetype:{t.split('/')[-1]}")
 
     if proc_queue:
-        _logger.info(f"Знайшли діючий метод надання доказу")
+        _logger.info("Знайшли діючий метод надання доказу")
         _logger.info(f"Поставили в чергу: {proc_queue}")
         await UseRedis.push_to_queue(proc_queue, f"{message_id}")
     else:
-        err = {
-            "title": "Тестовий доказ",
-            "PreviewDescription": [
-                {"UA": "Обери свій диплом"},
-                {"EN": "Please select your diploma."}
-            ],
-            "preview": True,
-            "evidences": [],
-        }
+        # err = {
+        #     "title": "Тестовий доказ",
+        #     "PreviewDescription": [
+        #         {"UA": "Обери свій диплом"},
+        #         {"EN": "Please select your diploma."}
+        #     ],
+        #     "preview": True,
+        #     "evidences": [],
+        # }
         # todo Потрібно згенерувати якусь помилкц щоб повідомити про не можливість надання доказу
         # Зараз тут генеруєтся тестові данні
         evidence, evidence_metadata, preview = route(edm_request)
 
         evidence.get_evidence(edm_request)
 
-        await UseRedis.save_to_redis(f"oots:message:response:evidence:{message_id}", evidence.to_redis)
+        await UseRedis.save_to_redis(
+            f"oots:message:response:evidence:{message_id}", evidence.to_redis
+        )
         await UseRedis.push_to_queue(QUEUE_OUTCOMING, f"{message_id}")
     _logger.info(f"Завершили обробку message_id: {message_id}")
     return None

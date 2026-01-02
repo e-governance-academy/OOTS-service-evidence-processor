@@ -3,13 +3,14 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class EDMRequestParsing:
     def __init__(self, request: str):
         self.request = etree.fromstring(request)
         self._ns = {}
         for perfix, uri in self.request.nsmap.items():
             if perfix is None:
-                perfix = 'default'
+                perfix = "default"
             self._ns.update({perfix: uri})
         self.query = self.request.find(".//query:Query", namespaces=self._ns)
 
@@ -25,18 +26,18 @@ class EDMRequestParsing:
 
     @property
     def is_possibility_for_preview(self):
-        slot = self._slot('PossibilityForPreview')
+        slot = self._slot("PossibilityForPreview")
         if slot:
-            value = slot.find('.//rim:Value', namespaces=self._ns)
+            value = slot.find(".//rim:Value", namespaces=self._ns)
             if value is not None:
-                return True if 'true'.lower() == value.text.lower() else False
+                return True if "true".lower() == value.text.lower() else False
         return False
 
     @property
     def is_second(self) -> bool:
         pl = self.preview_location
         _logger.debug(f"is_second: {pl}")
-        if pl is None or not pl :
+        if pl is None or not pl:
             return False
         return True
 
@@ -78,7 +79,9 @@ class EDMRequestParsing:
     def evidenceTypeClassification(self) -> str | None:
         if self.query is None:
             return None
-        classification = self.query.find(".//sdg:EvidenceTypeClassification", namespaces=self._ns)
+        classification = self.query.find(
+            ".//sdg:EvidenceTypeClassification", namespaces=self._ns
+        )
         if classification is None:
             return None
         return classification.text
@@ -100,12 +103,11 @@ class EDMRequestParsing:
 
     def all_slots(self, query: bool = False) -> dict[str, str | etree._Element]:
         if query:
-            slots = self.query.findall(f".//rim:Slot", namespaces=self._ns)
+            slots = self.query.findall(".//rim:Slot", namespaces=self._ns)
         else:
-            slots = self.request.findall(f".//rim:Slot", namespaces=self._ns)
+            slots = self.request.findall(".//rim:Slot", namespaces=self._ns)
         result = {}
         for slot in slots:
-
             name = slot.get("name")
             value = slot.find(".//rim:Value", namespaces=self._ns)
             if name and value is not None:
@@ -116,5 +118,6 @@ class EDMRequestParsing:
                 for chaild in value.getchildren():
                     result[name] = chaild
             except Exception as e:
-                ...
+                _logger.error(e)
+        #         todo потрібно щось робити
         return result

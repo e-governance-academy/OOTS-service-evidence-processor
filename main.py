@@ -30,24 +30,28 @@ async def process_evidence_requests():
         if not message_id:
             continue
 
-        message_id = message_id.decode('utf-8') if isinstance(message_id, bytes) else message_id
+        message_id = (
+            message_id.decode("utf-8") if isinstance(message_id, bytes) else message_id
+        )
         _logger.info(f"Отримано запит з Redis: {message_id}")
         asyncio.create_task(processor(message_id))
 
 
 if __name__ == "__main__":
     log_level = os.getenv("LOGGING_LEVEL", "INFO")
-    log_format = os.getenv("LOGGING_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    log_format = os.getenv(
+        "LOGGING_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     log_datefmt = os.getenv("LOGGING_DATE", "%Y-%m-%d %H:%M:%S")
     logging.basicConfig(
         format=log_format,
         datefmt=log_datefmt,
         level=log_level,
-        handlers=[logging.StreamHandler()]
+        handlers=[logging.StreamHandler()],
     )
 
     import asyncio
 
     _logger.info(f"Build version: {__version__}")
-    _logger.info('Starting...')
+    _logger.info("Starting...")
     asyncio.run(process_evidence_requests())

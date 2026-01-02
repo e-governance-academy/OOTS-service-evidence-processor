@@ -1,18 +1,19 @@
 import logging
-
-_logger = logging.getLogger(__name__)
-
 import uuid
 from dataclasses import dataclass
 
 from lxml import etree
 
-from .NS import NS
+from utils.NS import NS
+
+_logger = logging.getLogger(__name__)
 
 
 @dataclass
 class Evidence(NS):
-    title: str  # The title of the document instance that is provided by the Data Provider.
+    title: (
+        str  # The title of the document instance that is provided by the Data Provider.
+    )
     metadata: str  # xml element EvidenceMetadata DCAT-AP
     content: bytes | None = None
     contentType: str | None = None
@@ -21,9 +22,11 @@ class Evidence(NS):
 
     @property
     def RepositoryItemRef(self) -> etree._Element:
-        return etree.Element(self._tname("rim", "RepositoryItemRef"), nsmap=self._ns(),
-                             attrib={"title": self.title,
-                                     self._tname('xlink', 'href'): self.cid})
+        return etree.Element(
+            self._tname("rim", "RepositoryItemRef"),
+            nsmap=self._ns(),
+            attrib={"title": self.title, self._tname("xlink", "href"): self.cid},
+        )
 
 
 class EMetadata(NS):
@@ -31,7 +34,9 @@ class EMetadata(NS):
         super().__init__()
 
         self._xml = etree.Element(self._tname("sdg", "Evidence"), nsmap=self._ns)
-        etree.SubElement(self._xml, self._tname("sdg", "Identifier")).text = str(uuid.uuid4())
+        etree.SubElement(self._xml, self._tname("sdg", "Identifier")).text = str(
+            uuid.uuid4()
+        )
         # self._isAbout = etree.SubElement(self._xml, self._tname("sdg", "IsAbout"))
         # self._issuingAuthority = etree.SubElement(self._xml, self._tname("sdg", "IssuingAuthority"))
         # self._isConformeant = etree.SubElement(self._xml, self._tname("sdg", "IsConformant"))
@@ -53,13 +58,17 @@ class EMetadata(NS):
 class IssuingAuthority(NS):
     def __init__(self, shema, value):
         super().__init__()
-        self._xml = etree.Element(self._tname("sdg", "IssuingAuthority"), nsmap=self._ns)
-        etree.SubElement(self._xml, self._tname("sdg", "Identifier"),
-                         attrib={'schemeID': shema}).text = f"{value}"
+        self._xml = etree.Element(
+            self._tname("sdg", "IssuingAuthority"), nsmap=self._ns
+        )
+        etree.SubElement(
+            self._xml, self._tname("sdg", "Identifier"), attrib={"schemeID": shema}
+        ).text = f"{value}"
 
     def name(self, lang: str, name: str):
-        etree.SubElement(self._xml, self._tname('sdg', 'Name'),
-                         attrib={'lang': f"{lang}".upper()}).text = f"{name}"
+        etree.SubElement(
+            self._xml, self._tname("sdg", "Name"), attrib={"lang": f"{lang}".upper()}
+        ).text = f"{name}"
 
 
 class Distribution(NS):
@@ -79,15 +88,19 @@ class IsConformantTo(NS):
     def __init__(self, conformance):
         super().__init__()
         self._xml = etree.Element(self._tname("sdg", "IsConformantTo"), nsmap=self._ns)
-        etree.SubElement(self._xml, self._tname("sdg", "EvidenceTypeClassification")).text = conformance
+        etree.SubElement(
+            self._xml, self._tname("sdg", "EvidenceTypeClassification")
+        ).text = conformance
 
     def title(self, lang, title):
-        etree.SubElement(self._xml, self._tname('sdg', 'Title'),
-                         attrib={'lang': lang.upper}).text = title
+        etree.SubElement(
+            self._xml, self._tname("sdg", "Title"), attrib={"lang": lang.upper}
+        ).text = title
 
     def description(self, lang, description):
-        etree.SubElement(self._xml, self._tname('sdg', 'Description'),
-                         attrib={'lang': lang.upper}).text = description
+        etree.SubElement(
+            self._xml, self._tname("sdg", "Description"), attrib={"lang": lang.upper}
+        ).text = description
 
 
 class IsAbout(NS):

@@ -5,8 +5,7 @@ import redis
 import redis.asyncio as Redis
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-TTL = os.getenv("REDIS_TTL", "86400")  # 1 day
-TTL = TTL if TTL.isdigit() else int(TTL)
+TTL = int(os.getenv("REDIS_TTL", "86400"))  # 1 day
 
 
 class UseRedisAsync:

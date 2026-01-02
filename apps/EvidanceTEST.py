@@ -1,29 +1,33 @@
 import logging
-
-_logger = logging.getLogger(__name__)
-
 import pathlib
 import uuid
 
 from lxml import etree
+
 from utils.EDMRequestParsing import EDMRequestParsing
 from utils.EvidanceABC import (
     EMetadata,
     IssuingAuthority,
     IsAbout,
     IsConformantTo,
-    Distribution
+    Distribution,
 )
 from utils.NS import NS
+
+_logger = logging.getLogger(__name__)
 
 path = pathlib.Path(__file__).parent
 
 
 def metadata(person):
     distribution = Distribution("application/xml")
-    conformantTo = IsConformantTo('https://sr.oots.tech.ec.europa.eu/requirements/5247bb6b-6bec-43fd-9b2e-f99be2dbae39')
-    usingAuthority = IssuingAuthority('urn:cef.eu:names:identifier:EAS:9930', "DE7657587001")
-    usingAuthority.name(lang='UA', name="Міністерство зароботку")
+    conformantTo = IsConformantTo(
+        "https://sr.oots.tech.ec.europa.eu/requirements/5247bb6b-6bec-43fd-9b2e-f99be2dbae39"
+    )
+    usingAuthority = IssuingAuthority(
+        "urn:cef.eu:names:identifier:EAS:9930", "DE7657587001"
+    )
+    usingAuthority.name(lang="UA", name="Міністерство зароботку")
     about = IsAbout(person)
 
     metadata = EMetadata()
@@ -40,7 +44,7 @@ class Evidance(NS):
             "title": "Тестовий доказ",
             "PreviewDescription": [
                 {"UA": "Обери свій диплом"},
-                {"EN": "Please select your diploma."}
+                {"EN": "Please select your diploma."},
             ],
             "preview": True,
             "evidences": [],
@@ -61,7 +65,7 @@ class Evidance(NS):
 
     @property
     def naturale_person(self):
-        person = etree.Element(self._tname('sdg', 'NaturalPerson'), nsmap=self._ns)
+        person = etree.Element(self._tname("sdg", "NaturalPerson"), nsmap=self._ns)
         person[:] = self.request.natural_person[:]
         return person
 
@@ -70,7 +74,7 @@ class Evidance(NS):
 
         files = [
             path.parent / "EvidenceExamles" / "secondaryEducationEvidence(1).xml",
-            path.parent / "EvidenceExamles" / "secondaryEducationEvidence(2).xml"
+            path.parent / "EvidenceExamles" / "secondaryEducationEvidence(2).xml",
         ]
 
         xmls = [etree.parse(file.as_posix()) for file in files]
@@ -81,7 +85,7 @@ class Evidance(NS):
                 {
                     "cid": f"cid:{uuid.uuid4()}@gov.ua",
                     "content_type": "application/xml",
-                    "content": etree.tostring(xml, encoding='utf8').decode('utf8'),
+                    "content": etree.tostring(xml, encoding="utf8").decode("utf8"),
                     "permit": False,
                     "metadata": evidence_metadata,
                 }

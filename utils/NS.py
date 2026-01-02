@@ -10,7 +10,7 @@ class NS:
         "sdg": "http://data.europa.eu/p4s",
         "query": "urn:oasis:names:tc:ebxml-regrep:xsd:query:4.0",
         "xlink": "http://www.w3.org/1999/xlink",
-        "xml": "http://www.w3.org/XML/1998/namespace"
+        "xml": "http://www.w3.org/XML/1998/namespace",
     }
 
     def _tname(self, ns, tag):
