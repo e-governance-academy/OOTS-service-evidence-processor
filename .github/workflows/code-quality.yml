@@ -30,7 +30,7 @@ jobs:
 
       # Проверка типов (опционально, но крайне рекомендуется)
       - name: Type check with mypy
-        run: mypy . --ignore-missing-imports
+        run: mypy . --ignore-missing-imports --explicit-package-bases
 
       # Запуск тестов
       - name: Run tests with pytest
