@@ -37,10 +37,6 @@ class EMetadata(NS):
         etree.SubElement(self._xml, self._tname("sdg", "Identifier")).text = str(
             uuid.uuid4()
         )
-        # self._isAbout = etree.SubElement(self._xml, self._tname("sdg", "IsAbout"))
-        # self._issuingAuthority = etree.SubElement(self._xml, self._tname("sdg", "IssuingAuthority"))
-        # self._isConformeant = etree.SubElement(self._xml, self._tname("sdg", "IsConformant"))
-        # self._distribution = etree.SubElement(self._xml, self._tname("sdg", "Distribution"))
 
     def issuingAuthority(self, issuingAuthority: etree._Element):
         self._xml.append(issuingAuthority)

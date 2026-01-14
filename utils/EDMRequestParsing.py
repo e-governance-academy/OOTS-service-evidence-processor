@@ -103,6 +103,8 @@ class EDMRequestParsing:
         return value.text
 
     def all_slots(self, query: bool = False) -> dict[str, str | etree._Element | None]:
+        _logger.debug(f"all_slots: {query}")
+
         if isinstance(self.query, etree._Element):
             slots = self.query.findall(".//rim:Slot", namespaces=self._ns)
         else:

@@ -16,7 +16,6 @@ redis_timeout = int(os.getenv("REDIS_TIMEOUT", "5"))
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_client = aioredis.from_url(redis_url)
 
-# QUEUE_OUTCOMING = os.getenv("QUEUE_OUTCOMING", "oots:queue:outgoing")
 QUEUE_INCOMING = os.getenv("QUEUE_INCOMING", "oots:queue:incoming")
 
 
@@ -34,7 +33,8 @@ async def process_evidence_requests():
             message_id.decode("utf-8") if isinstance(message_id, bytes) else message_id
         )
         _logger.info(f"Отримано запит з Redis: {message_id}")
-        asyncio.create_task(processor(message_id))
+        task = asyncio.create_task(processor(message_id))
+        _logger.debug(f"Стартанув {task.get_name()}")
 
 
 if __name__ == "__main__":

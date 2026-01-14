@@ -1,28 +1,21 @@
+import logging
 import json
 import os
+from typing import Awaitable, cast, Any
 
 import redis
 from redis.asyncio import Redis
-from typing import Awaitable, cast
 
+_logger = logging.getLogger(__name__)
+
+QUEUE_OUTCOMING = os.getenv("QUEUE_OUTCOMING")
+QUEUE_INCOMING = os.getenv("QUEUE_INCOMING")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 TTL = int(os.getenv("REDIS_TTL", "86400"))  # 1 day
 
 
 class UseRedisAsync:
-    """A class for asynchronous Redis operations with type checking and error handling.
-    Attributes:
-        _redis_client: Redis async client instance
-    """
-
     def __init__(self, redis_url: str | Redis | None = None):
-        """Initialize Redis client with provided URL or default configuration.
-        Args:
-            redis_url: Redis connection URL or Redis client instance.
-                      If None, uses default REDIS_URL from environment.
-        Raises:
-            redis.exceptions.ConnectionError: If Redis connection fails
-        """
         try:
             if isinstance(redis_url, Redis):
                 self._redis_client = redis_url
@@ -33,15 +26,8 @@ class UseRedisAsync:
             raise redis.exceptions.ConnectionError(f"Failed to connect to Redis: {e}")
 
     async def get_from_redis(self, key: str) -> dict | None:
-        """Get and deserialize JSON data from Redis by key.
-        Args:
-            key: Redis key to retrieve data from
-        Returns:
-            Deserialized dictionary or None if key doesn't exist
-        Raises:
-            json.JSONDecodeError: If data cannot be decoded as JSON
-        """
         data = await self._redis_client.get(key)
+        _logger.debug(f"Get data: {key} datatype: {type(data)}")
         if data is None:
             return None
         try:
@@ -49,30 +35,23 @@ class UseRedisAsync:
         except json.JSONDecodeError:
             return json.loads(data, default=str)
 
-    async def save_to_redis(self, key: str, data: dict) -> None:
-        """Save dictionary as JSON to Redis with TTL.
-        Args:
-            key: Redis key to store data under
-            data: Dictionary to serialize and store
-        """
-        await self._redis_client.set(key, json.dumps(data), ex=TTL)
+    async def get_raw_from_redis(self, key: str) -> bytes | None:
+        data = await self._redis_client.get(key)
+        _logger.debug(f"Get raw data: {key} datatype: {type(data)}")
+        return data if isinstance(data, bytes) else None
+
+    async def save_to_redis(self, key: str, data: dict[Any, Any] | list | str) -> None:
+        _logger.debug(f"Saving data to Redis: {key} datatype: {type(data)}")
+        await self._redis_client.set(key, json.dumps(data, default=str), ex=TTL)
+
+    async def save_raw_to_redis(self, key: str, data: bytes) -> None:
+        _logger.debug(f"Saving raw data to Redis: {key} datatype: {type(data)}")
+        await self._redis_client.set(key, data, ex=TTL)
 
     async def push_to_queue(self, queue_name: str, message: str) -> None:
-        """Push message to Redis list queue.
-        Args:
-            queue_name: Name of the Redis list queue
-            message: Message to push to the queue
-        """
         await cast(Awaitable[int], self._redis_client.lpush(queue_name, message))
 
     async def update_from_redis(self, key: str, data: dict) -> None:
-        """Update existing dictionary in Redis with new data.
-        Args:
-            key: Redis key of dictionary to update
-            data: Dictionary with new values to merge
-        Raises:
-            TypeError: If stored value is not a dictionary
-        """
         d = await self.get_from_redis(key)
         if isinstance(d, dict):
             d.update(data)
@@ -82,8 +61,17 @@ class UseRedisAsync:
 
     @property
     def redis(self) -> Redis:
-        """Get the Redis client instance.
-        Returns:
-            Redis client instance
-        """
         return self._redis_client
+
+    async def close(self) -> None:
+        """Close the Redis connection"""
+        _logger.debug("Closing Redis connection")
+        await self._redis_client.close()
+
+    async def __aenter__(self):
+        """Async context manager entry"""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit"""
+        await self.close()

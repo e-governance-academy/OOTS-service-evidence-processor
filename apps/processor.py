@@ -27,7 +27,8 @@ async def processor(message_id: str):
 
     t = edm_request.evidenceTypeClassification
     _logger.info(f"Отриманий запит EvidenceTypeClassification: {t}")
-    proc_queue = await UseRedis.get_from_redis(f"oots:evidencetype:{t.split('/')[-1]}")
+    proc_queue = await UseRedis.get_raw_from_redis(f"oots:evidencetype:{t.split('/')[-1]}")
+    proc_queue = proc_queue.decode("utf-8") if isinstance(proc_queue, bytes) else proc_queue
 
     if proc_queue:
         _logger.info("Знайшли діючий метод надання доказу")
