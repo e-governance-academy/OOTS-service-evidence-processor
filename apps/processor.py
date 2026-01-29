@@ -35,15 +35,6 @@ async def processor(message_id: str):
         _logger.info(f"Поставили в чергу: {proc_queue}")
         await UseRedis.push_to_queue(proc_queue, f"{message_id}")
     else:
-        # err = {
-        #     "title": "Тестовий доказ",
-        #     "PreviewDescription": [
-        #         {"UA": "Обери свій диплом"},
-        #         {"EN": "Please select your diploma."}
-        #     ],
-        #     "preview": True,
-        #     "evidences": [],
-        # }
         # todo Потрібно згенерувати якусь помилкц щоб повідомити про не можливість надання доказу
         # Зараз тут генеруєтся тестові данні
         evidence, evidence_metadata, preview = route(edm_request)
